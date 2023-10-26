@@ -38,6 +38,15 @@ You can look into your primary database to view the current streams that has bee
 - Go into Redis console```sh redis-cli```
 - Run the command ```sh XREAD STREAMS $STREAM_NAME 0-0```
 
+### Queue
+
+You can also look at failed or completed jobs in the queue, or blocks that get stuck in the queue. Each queue uses a custom id of the block range `$startBlock-$endBlock`, you can check the stats and see what blocks fail and retry them from the command line without running the scraper. Using the scraper is recommended however.
+
+- Go to the queue console ```sh bull-repl```
+- Connect to the queue ```sh connect $QUEUE_NAME```
+- Run ```sh stats``` to see completed or failed jobs
+- Run ```sh retry id($startBlock-$endBlock)```
+
 
 ## To be completed
 - Dockerfile and docker-compose file is yet to be completed and tested, therefore the local requirements
