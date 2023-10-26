@@ -33,7 +33,8 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.get("/events", async (req: Request, res: Response) => {
-	const integrator = req.query.integrator;
+	try {
+		const integrator = req.query.integrator;
 	const filter = integrator ? {
 		integrator
 	} : {};
@@ -41,6 +42,12 @@ app.get("/events", async (req: Request, res: Response) => {
 	return res.json({
 		data: events
 	});
+	} catch (error) {
+		return res.json({
+			error: error,
+			success: false
+		})
+	}
 });
 
 // Start server

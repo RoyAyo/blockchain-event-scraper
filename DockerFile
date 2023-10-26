@@ -21,7 +21,5 @@ WORKDIR /app
 
 EXPOSE $PORT
 
-# USER $USER
+USER $USER
 RUN npm run build
-
-# CMD ["npm", "run", "start"]
