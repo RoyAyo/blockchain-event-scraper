@@ -1,0 +1,34 @@
+version: '3.5'
+networks:
+  lifi-test-network: {}
+services:
+  db:
+    container_name: lifi-test-db
+    image: mongo:6-jammy
+    ports:
+      - '27017:27017'
+    networks:
+      - lifi-test-network
+  cache:
+    container_name: lifi-test-cache
+    image: redis
+    ports:
+      - '6379:6379'
+    networks:
+      - lifi-test-network
+  api:
+    container_name: lifi-test-api
+    build:
+      context: ./
+    depends_on:
+      - db
+      - cache
+    environment:
+      MONGO_URI: mongodb://db:27017/scrape-blocks
+      REDIS_HOST: cache
+    ports:
+      - 3000:3000
+    command: >
+      npm run start
+    networks:
+      - lifi-test-network

@@ -1,26 +1,22 @@
 import { BigNumber, ethers, utils } from 'ethers'
-import { _abi } from '../types/abi'
 import { BlockTag } from '@ethersproject/abstract-provider'
 
-const CONTRACT_ADDRESS = '0xbD6C7B0d2f68c2b7805d88388319cfB6EcB50eA9'
-const POLYGON_RPC = 'https://polygon-rpc.com'
+import { _abi } from '../types/abi'
+import { CONTRACT_ADDRESS, POLYGON_RPC } from '../types/constants';
 
-interface ParsedFeeCollectedEvents {
+export interface ParsedFeeCollectedEvents {
+  txnHash: string, // the unique transaction hash
+  blockNo: number; // the block of the event
   token: string; // the address of the token that was collected
   integrator: string; // the integrator that triggered the fee collection
-  integratorFee: BigNumber; // the share collector for the integrator
-  lifiFee: BigNumber; // the share collected for lifi
+  integratorFee: string; // the share collector for the integrator
+  lifiFee: string; // the share collected for lifi
 }
-
-// interface IContractAndBlock {
-//     contract: ethers.Contract,
-//     latestBlockNo: number
-// }
 
 /**
  * Load and return the latest block no
  */
-export const loadContractAndLatestBlock = async (): Promise<number> => {
+export const loadLatestBlock = async (): Promise<number> => {
     const contract = new ethers.Contract(
         CONTRACT_ADDRESS,
         new utils.Interface(_abi),
@@ -62,10 +58,12 @@ export const parseFeeCollectorEvents = (
     const parsedEvent = feeCollectorContract.interface.parseLog(event)
 
     const feesCollected: ParsedFeeCollectedEvents = {
+      txnHash: event.transactionHash,
+      blockNo: event.blockNumber,
       token: parsedEvent.args[0],
       integrator: parsedEvent.args[1],
-      integratorFee: BigNumber.from(parsedEvent.args[2]),
-      lifiFee: BigNumber.from(parsedEvent.args[3]),
+      integratorFee: BigNumber.from(parsedEvent.args[2]).toHexString(),
+      lifiFee: BigNumber.from(parsedEvent.args[3]).toHexString(),
     }
     return feesCollected
   })

@@ -1,6 +1,10 @@
 import { createClient } from 'redis'
 
-const client = createClient();
+const client = createClient({
+  socket: {
+    host: process.env.REDIS_HOST ?? '127.0.0.1'
+  }
+});
 
 (async () => {
   await client.connect()
@@ -13,7 +17,6 @@ client.on('ready', async function () {
   })
   console.log('Cache is connected and ready')
 
-  // client.sendCommand(["XADD", "event_stream", "*", "fromBlock", "1", "toBlock", "2"])
 })
 
 export default client

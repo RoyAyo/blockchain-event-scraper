@@ -2,7 +2,6 @@ import express, { Application, Request, Response } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import rateLimit from 'express-rate-limit';
-import { scrapeData } from './scrape'
 
 import Event from "./modules/events/events.model";
 import './config/database';
@@ -38,23 +37,10 @@ app.get("/events", async (req: Request, res: Response) => {
 	const filter = integrator ? {
 		integrator
 	} : {};
-	const events = await Event.find(filter).sort({blockNo: 1});
+	const events = await Event.find(filter).sort({blockNo: -1});
 	return res.json({
 		data: events
 	});
-});
-
-app.post('/start-script', (req: Request, res: Response) => {
-	const {
-		fromBlock,
-		toBlock
-	} = req.body.fromBlock;
-	console.log(fromBlock)
-	console.log(toBlock)
-	scrapeData();
-	return res.json({
-		message: 'Script Started'
-	})
 });
 
 // Start server

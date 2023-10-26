@@ -1,7 +1,11 @@
+import '../../config/database';
 import { getModelForClass, prop } from "@typegoose/typegoose";
 
 class EventClass {
-    @prop({required: true, unique: true})
+    @prop({required: true})
+    public txnHash!: string;
+
+    @prop({required: true})
     public blockNo!: number;
 
     @prop({required: true}) //validate isAddress

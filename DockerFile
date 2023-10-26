@@ -1,4 +1,4 @@
-FROM node:18-alpine as base
+FROM node:19-alpine as base
 
 RUN npm install -g npm@9.2.0
 
@@ -9,18 +9,19 @@ ENV OWNER='node:node'
 FROM base as build
 WORKDIR /app
 COPY package*.json .
-RUN npm ci --omit=dev
+RUN npm ci
+COPY . .
 
 FROM build as release
 WORKDIR /app/node_modules
 COPY --from=build --chown=$OWNER /app/node_modules .
 
 WORKDIR /app
-COPY --chown=$OWNER *.js ./
+# COPY --chown=$OWNER *.js *.ts ./
 
 EXPOSE $PORT
 
-USER $USER
+# USER $USER
 RUN npm run build
 
-CMD ["npm", "run", "start"]
+# CMD ["npm", "run", "start"]
