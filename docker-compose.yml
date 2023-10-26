@@ -10,16 +10,17 @@ services:
     networks:
       - lifi-test-network
     volumes: 
-    - ./storage/mongo/data:/data/db
+      - ./storage/mongo/data:/db
   cache:
     container_name: lifi-test-cache
     image: redis
     ports:
       - '6379:6379'
+    command: ["redis-server", "--appendonly", "yes"]
     networks:
       - lifi-test-network
     volumes:
-        - ./storage/redis/data:/data/cache
+      - ./storage/redis/data:/data
   api:
     container_name: lifi-test-api
     build:
