@@ -1,4 +1,4 @@
-FROM node:19-alpine as base
+FROM --platform=linux/amd64 node:19-alpine as base
 
 RUN npm install -g npm@9.2.0
 
@@ -6,20 +6,20 @@ ENV PORT=3000
 ENV USER=node
 ENV OWNER='node:node'
 
+USER $USER
+WORKDIR /home/node/app
+
 FROM base as build
-WORKDIR /app
 COPY package*.json .
 RUN npm ci
-COPY . .
 
 FROM build as release
-WORKDIR /app/node_modules
-COPY --from=build --chown=$OWNER /app/node_modules .
+WORKDIR /home/node/app/node_modules
+COPY --from=build --chown=$OWNER /home/node/app/node_modules .
 
-WORKDIR /app
-# COPY --chown=$OWNER *.js *.ts ./
+WORKDIR /home/node/app
+COPY --chown=$OWNER . .
 
 EXPOSE $PORT
 
-USER $USER
 RUN npm run build

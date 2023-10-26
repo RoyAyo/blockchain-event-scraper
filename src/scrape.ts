@@ -26,8 +26,8 @@ export const scrapeData = async (startBlock?: BlockTag, endBlock?: BlockTag) => 
         }
 
         const latestScrapedBlock = await getLatestScrapedBlockNo();
-        let fromBlock = Number(startBlock) ?? latestScrapedBlock + 1; // fetch from the stack in the database
-        const maxBlockNo = Number(endBlock) ??  await loadLatestBlock();
+        let fromBlock = startBlock ? Number(startBlock) : (latestScrapedBlock + 1); // fetch from the stack in the database
+        const maxBlockNo = endBlock ? Number(endBlock) :  (await loadLatestBlock());
 
         while(fromBlock < maxBlockNo) {
             let toBlock = fromBlock + BLOCK_SCRAPE_RANGE - 1; // e.g range of 0-999, 1000-1999...
@@ -36,7 +36,6 @@ export const scrapeData = async (startBlock?: BlockTag, endBlock?: BlockTag) => 
             if(toBlock > maxBlockNo) {
                 toBlock = maxBlockNo;
             }
-
             // add current block to Queue
             loadFeeCollectorQueue.add({
                 maxBlockNo,
@@ -50,7 +49,7 @@ export const scrapeData = async (startBlock?: BlockTag, endBlock?: BlockTag) => 
 
         setTimeout(async () => {
             const jobs: JobCounts = await loadFeeCollectorQueue.getJobCounts()
-            
+
             if(jobs.active <= 0) {
                 process.exit()
             }
@@ -63,6 +62,16 @@ export const scrapeData = async (startBlock?: BlockTag, endBlock?: BlockTag) => 
 }
 
 // call function once the server is started
-const startBlock = process.argv[2]
-const endBlock = process.argv[3]
-scrapeData(startBlock, endBlock);
+const startBlock = process.argv[2];
+const endBlock = process.argv[3];
+
+loadFeeCollectorQueue.isReady().then(() => {
+    if(loadFeeCollectorQueue.client.status === 'ready') {
+        scrapeData(startBlock, endBlock);
+    } else {
+        throw new Error('Cache is not connecting');
+    }
+}).catch(e => {
+    console.error(e);
+    process.exit();
+});

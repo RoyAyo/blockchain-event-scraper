@@ -10,6 +10,10 @@ You can also install the bull-cli to view items in the queue
     npm install -g bull-cli
 ```
 
+## USING DOCKER
+
+You can simply run the full application with ```sh docker compose up --build``` and it will start the server up and it will be available to use at `http//localhost:3000`.
+
 ## INSTALLATION
 
 You should install the dependencies using npm
@@ -23,8 +27,9 @@ You can change most of the configurations used in the ./src/types/constants.ts, 
 
 ### Scraper
 
-You can run the scraper using ```sh npm run scrape```, this will look at the last ran block from our Cache and update the Redis-stream and our mongo database accordingly. During the optional case where blocks fail, the queue will automatically retry the job 2 more times before it eventually fails and job will be logged in the stdout and these blocks can be retried using ```sh npm run scrape $startblock $endblock```. 
-Only failed blocks can be retried this way to avoid adding events from a different range.
+- You can run the scraper using ```sh npm run scrape```, this will look at the last ran block from our Cache and update the Redis-stream and our mongo database accordingly. 
+- During the optional case where blocks fail, the queue will automatically retry the job 2 more times before it eventually fails and job will be logged in the stdout and these blocks can be retried using ```sh npm run scrape $startblock $endblock```. Only failed blocks can be retried this way to avoid adding events from a different range.
+NB: When using docker to run the application, you should run these commands in the `lifi-test-api` container. e.g ```sh docker exec lifi-test-api npm run scrape```.
 
 ### Server
 
@@ -49,6 +54,5 @@ You can also look at failed or completed jobs in the queue, or blocks that get s
 
 
 ## To be completed
-- Dockerfile and docker-compose file is yet to be completed and tested, therefore the local requirements
 - Refactoring, Cleaning up Typescript and jsdocs.
 - Proper error handler for the server.

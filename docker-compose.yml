@@ -9,6 +9,8 @@ services:
       - '27017:27017'
     networks:
       - lifi-test-network
+    volumes: 
+    - ./storage/mongo/data:/data/db
   cache:
     container_name: lifi-test-cache
     image: redis
@@ -16,6 +18,8 @@ services:
       - '6379:6379'
     networks:
       - lifi-test-network
+    volumes:
+        - ./storage/redis/data:/data/cache
   api:
     container_name: lifi-test-api
     build:

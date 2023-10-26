@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "build": "rimraf ./dist && tsc",
-    "start": "npm run build && node dist/server.js",
+    "start": "node dist/server.js",
     "start:dev": "npx nodemon",
-    "scrape": "npm run build && node dist/scrape.js",
+    "scrape": "node dist/scrape.js",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix"
   },

@@ -7,13 +7,20 @@ import Cache from '../config/cache';
 import { startSession } from 'mongoose';
 import { QUEUE_FAILED_RETRY, QUEUE_NAME } from '../types/constants';
 import RedisClient from '../helpers/cache.helpers';
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export const loadFeeCollectorQueue = new Queue(QUEUE_NAME, {
+    redis: {
+        host: process.env.REDIS_HOST || '127.0.0.1',
+    },
     defaultJobOptions: {
         attempts: QUEUE_FAILED_RETRY,
         removeOnFail: true,
     }
 });
+
 loadFeeCollectorQueue.process(async (job: Job, done: DoneCallback) => {
     const {
         maxBlockNo,
