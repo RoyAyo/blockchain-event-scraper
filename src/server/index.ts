@@ -3,19 +3,16 @@ import cors from "cors";
 import dotenv from "dotenv";
 import rateLimit from 'express-rate-limit';
 
-import Event from "./modules/events/events.model";
-import './config/database';
-import './config/cache';
+import '../config/database';
+import Event from "../common/modules/events/events.model";
 
+dotenv.config();
 const limiter = rateLimit({
 	windowMs: 15 * 60 * 1000, 
 	max: 100,
 	standardHeaders: true,
 	legacyHeaders: false,
 })
-
-// configurations
-dotenv.config();
 
 // Boot express
 const app: Application = express();
@@ -35,13 +32,13 @@ app.get("/", (req: Request, res: Response) => {
 app.get("/events", async (req: Request, res: Response) => {
 	try {
 		const integrator = req.query.integrator;
-	const filter = integrator ? {
-		integrator
-	} : {};
-	const events = await Event.find(filter).sort({blockNo: -1});
-	return res.json({
-		data: events
-	});
+		const filter = integrator ? {
+			integrator
+		} : {};
+		const events = await Event.find(filter).sort({blockNo: -1});
+		return res.json({
+			data: events
+		});
 	} catch (error) {
 		return res.json({
 			error: error,

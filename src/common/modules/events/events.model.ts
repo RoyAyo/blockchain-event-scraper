@@ -1,4 +1,3 @@
-import '../../config/database';
 import { getModelForClass, prop } from "@typegoose/typegoose";
 
 class EventClass {

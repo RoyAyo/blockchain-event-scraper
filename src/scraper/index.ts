@@ -1,20 +1,15 @@
 import process from "process";
-
-import { loadLatestBlock } from "./helpers/contract.helpers"
-import { loadFeeCollectorQueue } from "./utils/queue";
-import { getLatestScrapedBlockNo } from "./helpers/index";
-import redisClient from './helpers/cache.helpers';
-
-import { BLOCK_SCRAPE_RANGE } from "./types/constants";
-import { JobCounts } from "bull"; 
 import { BlockTag } from "@ethersproject/abstract-provider";
+import { JobCounts } from "bull";
+import dotenv from "dotenv";
 
-async function isBlockRangeFailed(startBlock?: BlockTag, endBlock?: BlockTag): Promise<boolean> {
-    // ensure it falls in the required range
-    const failedBlocks = await redisClient.find('field');
-    const blockRange =  `${startBlock}-${endBlock}`;
-    return failedBlocks.some((block: string)=> block === blockRange);
-}
+import '../config/database';
+import { loadLatestBlock } from "../common/helpers/contract.helpers"
+import { loadFeeCollectorQueue } from "../config/queue";
+import { getLatestScrapedBlockNo, isBlockRangeFailed } from "../common/helpers/index";
+import { BLOCK_SCRAPE_RANGE } from "../common/types/constants";
+
+dotenv.config();
 
 export const scrapeData = async (startBlock?: BlockTag, endBlock?: BlockTag) => {
     try {

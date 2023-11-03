@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ParsedFeeCollectedEvents } from "./contract.helpers";
 import { convertObjectToRedisArrayParameters } from ".";
-import Cache from "../config/cache";
+import Cache from "../../config/cache";
 import { STREAM_NAME } from "../types/constants";
 
 class RedisClient {

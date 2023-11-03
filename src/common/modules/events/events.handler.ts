@@ -1,27 +1,15 @@
-import Queue, { DoneCallback, Job } from 'bull'
-import { ParsedFeeCollectedEvents, loadFeeCollectorEvents, parseFeeCollectorEvents } from '../helpers/contract.helpers';
-import Event from '../modules/events/events.model';
-import { convertRedisArrayParametersToObject } from '../helpers/index';
-import Cache from '../config/cache';
+import { startSession } from "mongoose";
+import { DoneCallback, Job } from "bull";
 
-import { startSession } from 'mongoose';
-import { QUEUE_FAILED_RETRY, QUEUE_NAME } from '../types/constants';
-import RedisClient from '../helpers/cache.helpers';
-import dotenv from "dotenv";
+import Cache from '../../../config/cache';
+import Event from '../events/events.model';
+import redisClient from "../../helpers/redis.helpers";
+import { QUEUE_FAILED_RETRY } from "../../types/constants";
+import { loadFeeCollectorQueue } from "../../../config/queue";
+import { convertRedisArrayParametersToObject } from "../../helpers";
+import { ParsedFeeCollectedEvents, loadFeeCollectorEvents, parseFeeCollectorEvents } from "../../helpers/contract.helpers";
 
-dotenv.config();
-
-export const loadFeeCollectorQueue = new Queue(QUEUE_NAME, {
-    redis: {
-        host: process.env.REDIS_HOST || '127.0.0.1',
-    },
-    defaultJobOptions: {
-        attempts: QUEUE_FAILED_RETRY,
-        removeOnFail: true,
-    }
-});
-
-loadFeeCollectorQueue.process(async (job: Job, done: DoneCallback) => {
+export const loadFeeCollectorHandler = async (job: Job, done: DoneCallback) => {
     const {
         maxBlockNo,
         fromBlock,
@@ -31,7 +19,7 @@ loadFeeCollectorQueue.process(async (job: Job, done: DoneCallback) => {
     try {
         const events = await loadFeeCollectorEvents(fromBlock, toBlock);
         const parsedEvents = parseFeeCollectorEvents(events);
-        await RedisClient.addEventsToStream(parsedEvents, fromBlock, toBlock);
+        await redisClient.addEventsToStream(parsedEvents, fromBlock, toBlock);
         console.log(`Scraped from Block ${fromBlock} -> ${toBlock}`);
         
         if(toBlock >= maxBlockNo) {
@@ -45,13 +33,13 @@ loadFeeCollectorQueue.process(async (job: Job, done: DoneCallback) => {
         console.error(`Error processing block ${fromBlock} -> ${toBlock} on attempt ${job.attemptsMade}`);
         if(job.attemptsMade >= (QUEUE_FAILED_RETRY - 1)) {
             // to know what block range to retry
-            RedisClient.push('failed', `${fromBlock}-${toBlock}`);
+            redisClient.push('failed', `${fromBlock}-${toBlock}`);
             console.error(`Job Failed due to ${error} => Retry from: ${fromBlock}: to: ${toBlock}`);
             job.remove();
         }
         done(error as Error);
     }
-})
+}
 
 loadFeeCollectorQueue.on('finished', async () => {
 
@@ -59,7 +47,7 @@ loadFeeCollectorQueue.on('finished', async () => {
     session.startTransaction();
 
     try {
-        const records = await RedisClient.fetchEventsFromStream();
+        const records = await redisClient.fetchEventsFromStream();
         const allEvents: ParsedFeeCollectedEvents[] = []
 
         let maxValue = 0;
@@ -75,7 +63,7 @@ loadFeeCollectorQueue.on('finished', async () => {
             for(const event of events) {
                 // add Txn hash to a set during computation and delete if dedeuplication occurs
                 if(eventHash.has(event.txnHash)) {
-                    await RedisClient.deleteDuplicateFromStream(eventId);
+                    await redisClient.deleteDuplicateFromStream(eventId);
                 } else {
                     eventHash.add(event.txnHash)
                     allEvents.push(event)
